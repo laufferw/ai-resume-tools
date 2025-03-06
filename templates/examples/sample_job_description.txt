@@ -1,0 +1,71 @@
+# JOB DESCRIPTION: SENIOR SOFTWARE ENGINEER
+
+## COMPANY INFORMATION
+Company: Innovatech Solutions
+Location: San Francisco, CA (Hybrid - 2 days in office)
+Industry: Enterprise SaaS / FinTech
+Company Size: 250+ employees
+Founded: 2012
+
+About Us:
+Innovatech Solutions is a leading provider of cloud-based financial technology solutions that help businesses optimize their operations and improve financial decision-making. Our flagship product, FinanceHub, serves over 10,000 businesses worldwide. We're backed by top-tier investors and have experienced 40% year-over-year growth for the past three years. Our diverse and inclusive team is passionate about solving complex problems with elegant solutions.
+
+## POSITION OVERVIEW
+We're seeking an experienced Senior Software Engineer to join our growing engineering team. In this role, you'll help architect, develop, and maintain our core platform services while mentoring junior team members and contributing to our technical roadmap. This is a high-impact position with significant growth opportunities.
+
+## RESPONSIBILITIES
+- Design, develop, and maintain scalable, high-performance backend services using Python, Django, and AWS
+- Collaborate with product managers, designers, and other engineers to define and implement new features
+- Lead architectural discussions and make critical technical decisions for complex projects
+- Write clean, maintainable, and well-tested code that meets our quality standards
+- Participate in code reviews to ensure code quality and knowledge sharing
+- Troubleshoot and resolve complex technical issues in production systems
+- Optimize application performance and improve system reliability
+- Mentor junior engineers and provide technical guidance to the team
+- Stay current with industry trends and emerging technologies
+- Contribute to documentation and technical specifications
+- Participate in on-call rotation (approximately once every 8 weeks)
+
+## REQUIREMENTS
+### Essential Qualifications:
+- Bachelor's degree in Computer Science, Engineering, or related field (or equivalent practical experience)
+- 5+ years of professional software development experience
+- Strong proficiency in Python and experience with Django or similar frameworks
+- Solid understanding of RESTful API design and implementation
+- Experience with relational databases (PostgreSQL preferred) and SQL
+- Proficiency with Git and modern CI/CD practices
+- Strong knowledge of data structures, algorithms, and software design patterns
+- Experience with cloud platforms, preferably AWS (EC2, RDS, S3, Lambda)
+- Familiarity with containerization technologies (Docker, Kubernetes)
+- Excellent problem-solving skills and attention to detail
+- Strong communication skills and ability to work effectively in a team environment
+
+### Preferred Qualifications:
+- Master's degree in Computer Science or related field
+- Experience with microservices architecture and event-driven systems
+- Knowledge of financial systems or FinTech domain
+- Experience with message queuing systems like Kafka or RabbitMQ
+- Familiarity with NoSQL databases (MongoDB, DynamoDB)
+- Experience with performance monitoring and optimization tools
+- Contributions to open-source projects
+- Experience mentoring junior developers
+
+## BENEFITS & PERKS
+- Competitive salary: $140,000 - $180,000 DOE
+- Equity package: 0.05% - 0.1%
+- Comprehensive health, dental, and vision insurance
+- 401(k) matching program
+- Flexible PTO policy (minimum 3 weeks encouraged)
+- Professional development budget ($3,000/year)
+- Home office stipend ($500)
+- Wellness benefits including gym membership reimbursement
+- Catered lunches when in office
+- Regular team building events and activities
+- Parental leave: 16 weeks paid
+- Commuter benefits
+
+## HOW TO APPLY
+Please submit your resume, a brief cover letter explaining your interest in Innovatech Solutions, and links to any relevant projects or contributions (GitHub, portfolio, etc.). We value thoughtful applications that demonstrate your experience and how you could contribute to our team.
+
+Innovatech Solutions is an Equal Opportunity Employer. We celebrate diversity and are committed to creating an inclusive environment for all employees.
+

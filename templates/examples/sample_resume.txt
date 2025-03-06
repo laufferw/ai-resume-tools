@@ -1,0 +1,69 @@
+# JOHN DOE
+123 Tech Avenue, San Francisco, CA 94105
+(555) 123-4567 | john.doe@email.com | linkedin.com/in/johndoe | github.com/johndoe
+
+## PROFESSIONAL SUMMARY
+Innovative software developer with 5+ years of experience in full-stack development, specializing in web applications and cloud infrastructure. Proven track record of delivering scalable solutions using modern frameworks and best practices. Passionate about clean code, automation, and continuous learning.
+
+## SKILLS
+- Programming Languages: Python, JavaScript, TypeScript, Java, C++, SQL
+- Frameworks/Libraries: React, Django, Flask, Node.js, Express, Spring Boot
+- Cloud Technologies: AWS (EC2, S3, Lambda, DynamoDB), Google Cloud, Docker, Kubernetes
+- Database: PostgreSQL, MongoDB, MySQL, Redis
+- Tools: Git, GitHub Actions, Jenkins, Jira, Confluence, Postman
+- Methodologies: Agile/Scrum, CI/CD, Test-Driven Development, DevOps
+
+## WORK EXPERIENCE
+
+### SENIOR SOFTWARE ENGINEER | TECH INNOVATIONS INC. | SAN FRANCISCO, CA | JAN 2021 - PRESENT
+- Led a team of 5 developers in designing and implementing a microservices architecture for the company's flagship product, improving scalability by 40%
+- Reduced API response times by 60% through optimizing database queries and implementing efficient caching strategies
+- Architected and built a real-time analytics dashboard using React and WebSockets, processing over 1M events daily
+- Mentored junior developers through code reviews, pair programming, and weekly knowledge-sharing sessions
+- Implemented automated CI/CD pipelines using GitHub Actions, reducing deployment time from hours to minutes
+
+### SOFTWARE DEVELOPER | DATA SYSTEMS LLC | OAKLAND, CA | MAR 2018 - DEC 2020
+- Developed RESTful APIs and backend services using Django and PostgreSQL for a data analytics platform
+- Collaborated with UX designers to implement responsive front-end interfaces using React and Redux
+- Built and maintained containerized applications using Docker and Kubernetes on AWS
+- Automated test suite improving code coverage from 65% to 92% and significantly reducing bugs in production
+- Participated in Agile ceremonies and delivered features on schedule across 2-week sprint cycles
+
+### JUNIOR DEVELOPER | WEBCRAFT SOLUTIONS | SAN JOSE, CA | JUN 2016 - FEB 2018
+- Contributed to front-end and back-end development of client websites using JavaScript, HTML, CSS, and PHP
+- Maintained and enhanced existing web applications with focus on performance and usability
+- Assisted in database design and optimization for small to medium-sized business applications
+- Collaborated with the QA team to identify and resolve software bugs and issues
+
+## EDUCATION
+
+### BACHELOR OF SCIENCE IN COMPUTER SCIENCE | UNIVERSITY OF CALIFORNIA, BERKELEY | 2012 - 2016
+- GPA: 3.8/4.0
+- Relevant Coursework: Data Structures, Algorithms, Database Systems, Software Engineering, Artificial Intelligence
+- Senior Project: Developed a machine learning application to predict traffic patterns
+
+## PROJECTS
+
+### PERSONAL FINANCE TRACKER | GITHUB.COM/JOHNDOE/FINANCE-TRACKER
+- Built a full-stack application using React, Node.js, and MongoDB to track personal expenses and visualize spending habits
+- Implemented OAuth authentication and data encryption for user security
+- Designed responsive UI with data visualization components using Chart.js
+
+### OPENSOURCE CONTRIBUTION: PYTHON DATA ANALYSIS LIBRARY
+- Contributed to a popular open-source Python library for data analysis, adding new features and fixing bugs
+- Improved documentation and wrote unit tests to ensure code quality
+
+## CERTIFICATIONS
+- AWS Certified Solutions Architect – Associate (2022)
+- Professional Scrum Master I (PSM I) (2021)
+- MongoDB Certified Developer (2020)
+
+## LANGUAGES
+- English (Native)
+- Spanish (Conversational)
+
+## INTERESTS
+- Contributing to open-source projects
+- Tech meetups and hackathons
+- Hiking and outdoor photography
+
