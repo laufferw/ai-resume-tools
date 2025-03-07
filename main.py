@@ -14,6 +14,8 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import pandas as pd
 import docx
+import tkinter as tk
+from tkinter import filedialog
 
 # Import LangChain and OpenAI components
 from langchain_openai import ChatOpenAI
@@ -209,12 +211,20 @@ Create the full cover letter text now:
     
     chain = cover_letter_prompt | llm
     
-    return chain.invoke({
+    result = chain.invoke({
         "candidate_name": candidate_name,
         "company_name": company_name,
         "resume_info": resume_analysis.model_dump_json(),
         "job_info": job_analysis.model_dump_json()
     })
+    
+    # Check if result is an AIMessage object and extract content if needed
+    from langchain_core.messages import AIMessage
+    if isinstance(result, AIMessage):
+        # Extract the content from AIMessage
+        return result.content
+    else:
+        return result
 
 def generate_customized_resume(resume_text: str, customization: ResumeCustomization) -> str:
     """Generate a customized resume based on original resume and customization suggestions."""
@@ -262,7 +272,7 @@ def main():
     cover_letter_parser.add_argument("--job", required=True, help="Path to job description file")
     cover_letter_parser.add_argument("--name", required=True, help="Candidate's name")
     cover_letter_parser.add_argument("--company", required=True, help="Company name")
-    cover_letter_parser.add_argument("--output", default="cover_letter.txt", help="Output file path")
+    cover_letter_parser.add_argument("--output", required=False, help="Output file path")
     
     # Resume customization command
     resume_parser = subparsers.add_parser("customize-resume", help="Customize a resume for a job")
@@ -415,7 +425,7 @@ def process_resume_customization(resume_path: str, job_path: str, output_path: s
     except Exception as e:
         return f"Error customizing resume: {str(e)}"
 
-def process_cover_letter(resume_path: str, job_path: str, name: str, company: str, output_path: str) -> str:
+def process_cover_letter(resume_path: str, job_path: str, name: str, company: str, output_path: Optional[str] = None) -> str:
     """
     Load documents, analyze them, and generate a cover letter.
     
@@ -424,7 +434,7 @@ def process_cover_letter(resume_path: str, job_path: str, name: str, company: st
         job_path: Path to the job description file
         name: Candidate's name
         company: Company name
-        output_path: Path to save the cover letter
+        output_path: Path to save the cover letter, if None or empty a file dialog will be shown
     
     Returns:
         Status message
@@ -448,6 +458,23 @@ def process_cover_letter(resume_path: str, job_path: str, name: str, company: st
             name, 
             company
         )
+        
+        # If output_path is None or empty, prompt user for save location
+        if not output_path:
+            # Create a root window and hide it
+            root = tk.Tk()
+            root.withdraw()
+            
+            # Show file save dialog
+            output_path = filedialog.asksaveasfilename(
+                initialfile="cover_letter.txt",
+                defaultextension=".txt",
+                filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
+            )
+            
+            # If user cancels the dialog
+            if not output_path:
+                return "Error: Cover letter generation canceled. No output location selected."
         
         # Save the cover letter
         save_document(cover_letter, output_path)

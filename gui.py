@@ -23,6 +23,7 @@ class AIResumeToolsGUI:
         self.output_path = tk.StringVar()
         self.candidate_name = tk.StringVar()
         self.company_name = tk.StringVar()
+        self.ask_each_time = tk.BooleanVar(value=False)  # Variable for "Ask each time" checkbox
         # Create status variables
         self.status_var = tk.StringVar()
         self.status_var.set("Ready")
@@ -69,8 +70,14 @@ class AIResumeToolsGUI:
         
         # Output file
         ttk.Label(file_frame, text="Output File:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
-        ttk.Entry(file_frame, textvariable=self.output_path, width=50).grid(row=2, column=1, sticky="ew", padx=5, pady=5)
+        self.output_entry = ttk.Entry(file_frame, textvariable=self.output_path, width=50)
+        self.output_entry.grid(row=2, column=1, sticky="ew", padx=5, pady=5)
         ttk.Button(file_frame, text="Browse", command=self.browse_output).grid(row=2, column=2, padx=5, pady=5)
+        
+        # Add "Ask each time" checkbox
+        ask_each_time_cb = ttk.Checkbutton(file_frame, text="Ask each time", variable=self.ask_each_time, 
+                                           command=self.toggle_output_entry_state)
+        ask_each_time_cb.grid(row=2, column=3, padx=5, pady=5)
         
         # Info Frame for Cover Letter
         info_frame = ttk.LabelFrame(self.root, text="Additional Information (for Cover Letter)")
@@ -167,6 +174,17 @@ class AIResumeToolsGUI:
         )
         if filename:
             self.output_path.set(filename)
+            # Uncheck "Ask each time" checkbox if user manually selects a file
+            self.ask_each_time.set(False)
+            self.toggle_output_entry_state()
+    
+    def toggle_output_entry_state(self):
+        """Enable or disable the output entry field based on the 'Ask each time' checkbox"""
+        if self.ask_each_time.get():
+            self.output_entry.configure(state="disabled")
+            self.output_path.set("")
+        else:
+            self.output_entry.configure(state="normal")
     
     def run_task(self, task_type):
         if self.is_processing:
@@ -192,7 +210,7 @@ class AIResumeToolsGUI:
                 return
         
         if task_type in ["customize_resume", "cover_letter"]:
-            if not self.output_path.get():
+            if not self.output_path.get() and not self.ask_each_time.get():
                 # Set default output path if none is specified
                 data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
                 os.makedirs(data_dir, exist_ok=True)
@@ -331,9 +349,14 @@ class AIResumeToolsGUI:
         try:
             resume_path = self.resume_path.get()
             job_desc_text = self.job_desc_text_area.get("1.0", tk.END).strip()
-            output_path = self.output_path.get()
             name = self.candidate_name.get()
             company = self.company_name.get()
+            
+            # Check if "Ask each time" checkbox is checked
+            if self.ask_each_time.get():
+                output_path = None
+            else:
+                output_path = self.output_path.get()
             
             # Determine which job description source to use (prioritize pasted text)
             if job_desc_text:
@@ -351,16 +374,28 @@ class AIResumeToolsGUI:
             # Call the process_cover_letter function from main.py
             result = main.process_cover_letter(resume_path, job_path, name, company, output_path)
             
-            # If successful, show success message
-            if os.path.exists(output_path):
-                # Show success message box
-                messagebox.showinfo(
-                    "Success", 
-                    f"Cover letter created successfully!\nSaved to: {output_path}"
-                )
-                return f"✅ COVER LETTER CREATED SUCCESSFULLY!\nSaved to: {output_path}\n\n{result}"
+            # Check if the operation was canceled
+            if "Error: Cover letter generation canceled" in result:
+                return result
+            
+            # Extract the actual output path from the result message
+            import re
+            path_match = re.search(r"saved to (.+)$", result)
+            if path_match:
+                actual_output_path = path_match.group(1)
+                
+                # If successful, show success message
+                if os.path.exists(actual_output_path):
+                    # Show success message box
+                    messagebox.showinfo(
+                        "Success", 
+                        f"Cover letter created successfully!\nSaved to: {actual_output_path}"
+                    )
+                    return f"✅ COVER LETTER CREATED SUCCESSFULLY!\nSaved to: {actual_output_path}\n\n{result}"
+                else:
+                    raise Exception("Output file was not created")
             else:
-                raise Exception("Output file was not created")
+                raise Exception("Could not determine output path from result message")
         except Exception as e:
             raise Exception(f"Error generating cover letter: {str(e)}")
             
