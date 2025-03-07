@@ -15,12 +15,13 @@ class AIResumeToolsGUI:
         self.root.geometry("900x700")
         
         # Create variables to store file paths
+        # Create variables to store file paths
         self.resume_path = tk.StringVar()
         self.job_desc_path = tk.StringVar()
+        self.job_desc_text = tk.StringVar()  # Added variable for pasted job description text
         self.output_path = tk.StringVar()
         self.candidate_name = tk.StringVar()
         self.company_name = tk.StringVar()
-        
         # Create status variables
         self.status_var = tk.StringVar()
         self.status_var.set("Ready")
@@ -52,6 +53,19 @@ class AIResumeToolsGUI:
         ttk.Entry(file_frame, textvariable=self.job_desc_path, width=50).grid(row=1, column=1, sticky="ew", padx=5, pady=5)
         ttk.Button(file_frame, text="Browse", command=self.browse_job_desc).grid(row=1, column=2, padx=5, pady=5)
         
+        # Job Description Text Box
+        jd_text_frame = ttk.LabelFrame(self.root, text="Paste Job Description Here")
+        jd_text_frame.grid(row=2, column=0, columnspan=4, sticky="ew", padx=5, pady=5)
+        jd_text_frame.columnconfigure(0, weight=1)
+        jd_text_frame.rowconfigure(0, weight=1)
+        
+        self.job_desc_text_area = scrolledtext.ScrolledText(jd_text_frame, wrap=tk.WORD, width=80, height=10)
+        self.job_desc_text_area.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        
+        # Add note about priority
+        ttk.Label(jd_text_frame, text="Note: Pasted text will be used over file input if both are provided.", 
+                  font=("Arial", 8, "italic")).grid(row=1, column=0, sticky="w", padx=5, pady=(0, 5))
+        
         # Output file
         ttk.Label(file_frame, text="Output File:").grid(row=2, column=0, sticky="w", padx=5, pady=5)
         ttk.Entry(file_frame, textvariable=self.output_path, width=50).grid(row=2, column=1, sticky="ew", padx=5, pady=5)
@@ -59,7 +73,7 @@ class AIResumeToolsGUI:
         
         # Info Frame for Cover Letter
         info_frame = ttk.LabelFrame(self.root, text="Additional Information (for Cover Letter)")
-        info_frame.grid(row=2, column=0, columnspan=4, sticky="ew", padx=5, pady=5)
+        info_frame.grid(row=3, column=0, columnspan=4, sticky="ew", padx=5, pady=5)
         info_frame.columnconfigure(1, weight=1)
         
         # Candidate name
@@ -72,7 +86,7 @@ class AIResumeToolsGUI:
         
         # Action Buttons
         action_frame = ttk.Frame(self.root)
-        action_frame.grid(row=3, column=0, columnspan=4, sticky="ew", padx=5, pady=5)
+        action_frame.grid(row=4, column=0, columnspan=4, sticky="ew", padx=5, pady=5)
         
         ttk.Button(action_frame, text="Analyze Resume", command=lambda: self.run_task("analyze_resume")).grid(row=0, column=0, padx=5, pady=5)
         ttk.Button(action_frame, text="Analyze Job Description", command=lambda: self.run_task("analyze_job")).grid(row=0, column=1, padx=5, pady=5)
@@ -86,11 +100,18 @@ class AIResumeToolsGUI:
         cover_letter_btn = ttk.Button(action_frame, text="Generate Cover Letter", 
                                  command=lambda: self.run_task("cover_letter"))
         cover_letter_btn.grid(row=0, column=3, padx=5, pady=5)
+        cover_letter_btn.grid(row=0, column=3, padx=5, pady=5)
         cover_letter_btn.bind("<Button-3>", lambda e: self.browse_output("cover_letter"))
+        
+        # Add Match Job Fit button
+        match_job_btn = ttk.Button(action_frame, text="Match Job Fit", 
+                               command=lambda: self.run_task("match_job"))
+        match_job_btn.grid(row=0, column=4, padx=5, pady=5)
+        
         # Results area
         result_frame = ttk.LabelFrame(self.root, text="Results")
-        result_frame.grid(row=4, column=0, columnspan=4, sticky="nsew", padx=5, pady=5)
-        self.root.rowconfigure(4, weight=1)
+        result_frame.grid(row=5, column=0, columnspan=4, sticky="nsew", padx=5, pady=5)
+        self.root.rowconfigure(5, weight=1)
         result_frame.rowconfigure(0, weight=1)
         result_frame.columnconfigure(0, weight=1)
         
@@ -99,7 +120,7 @@ class AIResumeToolsGUI:
         
         # Status bar
         status_frame = ttk.Frame(self.root)
-        status_frame.grid(row=5, column=0, columnspan=4, sticky="ew", padx=5, pady=(10, 0))
+        status_frame.grid(row=6, column=0, columnspan=4, sticky="ew", padx=5, pady=(10, 0))
         
         self.progress_bar = ttk.Progressbar(status_frame, mode="indeterminate")
         self.progress_bar.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
@@ -157,9 +178,11 @@ class AIResumeToolsGUI:
                 messagebox.showerror("Input Error", "Please select a resume file.")
                 return
         
-        if task_type in ["analyze_job", "customize_resume", "cover_letter"]:
-            if not self.job_desc_path.get():
-                messagebox.showerror("Input Error", "Please select a job description file.")
+        if task_type in ["analyze_job", "customize_resume", "cover_letter", "match_job"]:
+            job_desc_text = self.job_desc_text_area.get("1.0", tk.END).strip()
+            # Check if either job description file or pasted text is provided
+            if not self.job_desc_path.get() and not job_desc_text:
+                messagebox.showerror("Input Error", "Please either select a job description file or paste job description text.")
                 return
         
         if task_type == "cover_letter":
@@ -211,6 +234,8 @@ class AIResumeToolsGUI:
                 result = self.customize_resume()
             elif task_type == "cover_letter":
                 result = self.generate_cover_letter()
+            elif task_type == "match_job":
+                result = self.compare_job_match()
             
             # Update UI with result
             self.root.after(0, lambda: self.update_result(result))
@@ -241,12 +266,27 @@ class AIResumeToolsGUI:
             if doc_type == "resume":
                 file_path = self.resume_path.get()
                 doc_type_str = "resume"
-            else:
-                file_path = self.job_desc_path.get()
+                # Call the analyze function from main.py with file path
+                result = main.analyze_document(file_path, doc_type_str)
+            else:  # job description
                 doc_type_str = "job"
-            
-            # Call the analyze function from main.py
-            result = main.analyze_document(file_path, doc_type_str)
+                job_desc_text = self.job_desc_text_area.get("1.0", tk.END).strip()
+                
+                # Prioritize pasted text over file input
+                if job_desc_text:
+                    # Save the pasted text to a temporary file
+                    temp_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "temp_job_desc.txt")
+                    os.makedirs(os.path.dirname(temp_file), exist_ok=True)
+                    
+                    with open(temp_file, "w", encoding="utf-8") as f:
+                        f.write(job_desc_text)
+                    
+                    # Call the analyze function with the temp file
+                    result = main.analyze_document(temp_file, doc_type_str)
+                else:
+                    file_path = self.job_desc_path.get()
+                    # Call the analyze function with the selected file
+                    result = main.analyze_document(file_path, doc_type_str)
             return result
         except Exception as e:
             raise Exception(f"Error analyzing {doc_type}: {str(e)}")
@@ -254,8 +294,21 @@ class AIResumeToolsGUI:
     def customize_resume(self):
         try:
             resume_path = self.resume_path.get()
-            job_path = self.job_desc_path.get()
+            job_desc_text = self.job_desc_text_area.get("1.0", tk.END).strip()
             output_path = self.output_path.get()
+            
+            # Determine which job description source to use (prioritize pasted text)
+            if job_desc_text:
+                # Save the pasted text to a temporary file
+                temp_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "temp_job_desc.txt")
+                os.makedirs(os.path.dirname(temp_file), exist_ok=True)
+                
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    f.write(job_desc_text)
+                
+                job_path = temp_file
+            else:
+                job_path = self.job_desc_path.get()
             
             # Call the process_resume_customization function from main.py
             result = main.process_resume_customization(resume_path, job_path, output_path)
@@ -276,10 +329,23 @@ class AIResumeToolsGUI:
     def generate_cover_letter(self):
         try:
             resume_path = self.resume_path.get()
-            job_path = self.job_desc_path.get()
+            job_desc_text = self.job_desc_text_area.get("1.0", tk.END).strip()
             output_path = self.output_path.get()
             name = self.candidate_name.get()
             company = self.company_name.get()
+            
+            # Determine which job description source to use (prioritize pasted text)
+            if job_desc_text:
+                # Save the pasted text to a temporary file
+                temp_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "temp_job_desc.txt")
+                os.makedirs(os.path.dirname(temp_file), exist_ok=True)
+                
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    f.write(job_desc_text)
+                
+                job_path = temp_file
+            else:
+                job_path = self.job_desc_path.get()
             
             # Call the process_cover_letter function from main.py
             result = main.process_cover_letter(resume_path, job_path, name, company, output_path)
@@ -297,18 +363,80 @@ class AIResumeToolsGUI:
         except Exception as e:
             raise Exception(f"Error generating cover letter: {str(e)}")
             
+    def compare_job_match(self):
+        """
+        Compare resume with job description to determine fit and provide analysis.
+        """
+        try:
+            resume_path = self.resume_path.get()
+            job_desc_text = self.job_desc_text_area.get("1.0", tk.END).strip()
+            
+            # Determine which job description source to use (prioritize pasted text)
+            if job_desc_text:
+                # Save the pasted text to a temporary file
+                temp_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "temp_job_desc.txt")
+                os.makedirs(os.path.dirname(temp_file), exist_ok=True)
+                
+                with open(temp_file, "w", encoding="utf-8") as f:
+                    f.write(job_desc_text)
+                
+                job_path = temp_file
+            else:
+                job_path = self.job_desc_path.get()
+            
+            # Call the process_job_match function from main.py
+            result = main.process_job_match(resume_path, job_path)
+            
+            # Format the result nicely
+            try:
+                job_match = json.loads(result)
+                
+                formatted_result = f"# Job Match Analysis\n\n"
+                formatted_result += f"## Match Score: {job_match['match_score']}%\n\n"
+                
+                formatted_result += "## Strengths:\n"
+                for strength in job_match['strengths']:
+                    formatted_result += f"- {strength}\n"
+                
+                formatted_result += "\n## Weaknesses:\n"
+                for weakness in job_match['weaknesses']:
+                    formatted_result += f"- {weakness}\n"
+                
+                formatted_result += "\n## Matching Skills:\n"
+                for skill in job_match['matching_skills']:
+                    formatted_result += f"- {skill}\n"
+                
+                formatted_result += "\n## Missing Skills:\n"
+                for skill in job_match['missing_skills']:
+                    formatted_result += f"- {skill}\n"
+                
+                formatted_result += f"\n## Experience Alignment:\n{job_match['experience_alignment']}\n\n"
+                
+                formatted_result += "## Recommendations:\n"
+                for rec in job_match['recommendations']:
+                    formatted_result += f"- {rec}\n"
+                
+                return formatted_result
+            except:
+                # If JSON parsing fails, return the raw result
+                return result
+            
+        except Exception as e:
+            raise Exception(f"Error analyzing job match: {str(e)}")
+            
     def show_help(self):
         """Display help information when the help button is clicked"""
         help_text = """AI Resume Tools v1.0 - Basic Instructions
 
 1. File Selection:
    - Select your resume file (.docx format)
-   - Select a job description file (.docx format)
+   - Select a job description file (.docx format) OR paste job description text
    - Optionally specify an output file location
 
 2. Analysis:
    - Click "Analyze Resume" to get insights about your resume
    - Click "Analyze Job Description" to extract key requirements
+   - Click "Match Job Fit" to see how well your resume matches the job
 
 3. Resume Customization:
    - Click "Customize Resume" to tailor your resume to the job description
@@ -316,7 +444,7 @@ class AIResumeToolsGUI:
 
 4. Cover Letter:
    - Fill in your name and the company name
-   - Click "Generate Cover Letter" to create a targeted cover letter
+   - Click "Generate Cover Letter" to create a personalized cover letter
    - The cover letter will be saved to the specified output location
 
 Note: This application requires an OpenAI API key in the .env file.

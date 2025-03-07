@@ -20,7 +20,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import PromptTemplate, ChatPromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel, Field
-from langchain.chains import LLMChain
+from langchain.schema.runnable import RunnableSequence
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -53,6 +53,16 @@ class JobAnalysis(BaseModel):
     responsibilities: list[str] = Field(description="Key job responsibilities")
     company_values: list[str] = Field(description="Company values extracted from the description")
     keywords: list[str] = Field(description="Important keywords from the job description")
+
+class JobMatch(BaseModel):
+    """Analysis of how well a resume matches a job description."""
+    match_score: int = Field(description="Percentage (0-100) representing overall match")
+    matching_skills: list[str] = Field(description="List of skills that match job requirements")
+    missing_skills: list[str] = Field(description="List of required skills missing from resume")
+    experience_alignment: str = Field(description="Description of how experience aligns with job")
+    recommendations: list[str] = Field(description="List of specific recommendations to improve match")
+    strengths: list[str] = Field(description="List of candidate's strengths for this position")
+    weaknesses: list[str] = Field(description="List of areas where the candidate may fall short")
 
 class ResumeCustomization(BaseModel):
     """Customization suggestions for a resume."""
@@ -89,8 +99,8 @@ def analyze_resume(resume_text: str) -> ResumeAnalysis:
         partial_variables={"format_instructions": resume_parser.get_format_instructions()},
     )
     
-    chain = LLMChain(llm=llm, prompt=resume_prompt)
-    result = chain.run(resume=resume_text)
+    chain = resume_prompt | llm
+    result = chain.invoke({"resume": resume_text})
     
     try:
         return resume_parser.parse(result)
@@ -109,8 +119,8 @@ def analyze_job_description(job_text: str) -> JobAnalysis:
         partial_variables={"format_instructions": job_parser.get_format_instructions()},
     )
     
-    chain = LLMChain(llm=llm, prompt=job_prompt)
-    result = chain.run(job=job_text)
+    chain = job_prompt | llm
+    result = chain.invoke({"job": job_text})
     
     try:
         return job_parser.parse(result)
@@ -138,8 +148,8 @@ Job Analysis:
         partial_variables={"format_instructions": customization_parser.get_format_instructions()},
     )
     
-    chain = LLMChain(llm=llm, prompt=customization_prompt)
-    result = chain.run(resume_analysis=resume_analysis.model_dump_json(), job_analysis=job_analysis.model_dump_json())
+    chain = customization_prompt | llm
+    result = chain.invoke({"resume_analysis": resume_analysis.model_dump_json(), "job_analysis": job_analysis.model_dump_json()})
     
     try:
         return customization_parser.parse(result)
@@ -173,14 +183,14 @@ Important guidelines:
 Create the full cover letter text now:
 """)
     
-    chain = LLMChain(llm=llm, prompt=cover_letter_prompt)
+    chain = cover_letter_prompt | llm
     
-    return chain.run(
-        candidate_name=candidate_name,
-        company_name=company_name,
-        resume_info=resume_analysis.model_dump_json(),
-        job_info=job_analysis.model_dump_json()
-    )
+    return chain.invoke({
+        "candidate_name": candidate_name,
+        "company_name": company_name,
+        "resume_info": resume_analysis.model_dump_json(),
+        "job_info": job_analysis.model_dump_json()
+    })
 
 def generate_customized_resume(resume_text: str, customization: ResumeCustomization) -> str:
     """Generate a customized resume based on original resume and customization suggestions."""
@@ -205,12 +215,12 @@ Important guidelines:
 Create the full customized resume now:
 """)
     
-    chain = LLMChain(llm=llm, prompt=resume_prompt)
+    chain = resume_prompt | llm
     
-    return chain.run(
-        resume=resume_text,
-        customization=customization.model_dump_json()
-    )
+    return chain.invoke({
+        "resume": resume_text,
+        "customization": customization.model_dump_json()
+    })
 
 def save_document(content: str, file_path: str) -> None:
     """Save content to a file."""
@@ -422,7 +432,83 @@ def process_cover_letter(resume_path: str, job_path: str, name: str, company: st
     except Exception as e:
         return f"Error generating cover letter: {str(e)}"
 
+def compare_resume_to_job(resume_path: str, job_description_path: str) -> JobMatch:
+    """
+    Compare a resume to a job description and return a detailed match analysis.
+    
+    Args:
+        resume_path: Path to the resume file
+        job_description_path: Path to the job description file
+    
+    Returns:
+        JobMatch object with detailed analysis
+    """
+    # Load and analyze the resume
+    resume_text = load_document(resume_path)
+    resume_analysis = analyze_resume(resume_text)
+    
+    # Load and analyze the job description
+    job_text = load_document(job_description_path)
+    job_analysis = analyze_job_description(job_text)
+    
+    # Create a parser for the JobMatch output
+    job_match_parser = PydanticOutputParser(pydantic_object=JobMatch)
+    
+    # Create a prompt template for the comparison
+    match_prompt = PromptTemplate(
+        template="""
+Analyze how well the resume matches the job description and provide a detailed assessment:
+
+Resume Analysis:
+{resume_analysis}
+
+Job Description Analysis:
+{job_analysis}
+
+Provide a detailed assessment of how well the candidate's profile matches this job opportunity.
+Be objective and analytical, assessing both strengths and weaknesses. 
+Consider skills match, experience alignment, and overall fit.
+
+{format_instructions}
+""",
+        input_variables=["resume_analysis", "job_analysis"],
+        partial_variables={"format_instructions": job_match_parser.get_format_instructions()},
+    )
+    
+    # Create and run the chain
+    chain = match_prompt | llm
+    result = chain.invoke({
+        "resume_analysis": resume_analysis.model_dump_json(),
+        "job_analysis": job_analysis.model_dump_json()
+    })
+    
+    try:
+        return job_match_parser.parse(result)
+    except Exception as e:
+        print(f"Error parsing job match analysis: {e}")
+        print("Raw output:", result)
+        sys.exit(1)
+
+def process_job_match(resume_path: str, job_path: str) -> str:
+    """
+    Compare a resume to a job description and return a detailed match analysis.
+    
+    Args:
+        resume_path: Path to the resume file
+        job_path: Path to the job description file
+    
+    Returns:
+        Formatted string with match analysis results
+    """
+    try:
+        print("Analyzing job match...")
+        match_analysis = compare_resume_to_job(resume_path, job_path)
+        return json.dumps(json.loads(match_analysis.model_dump_json()), indent=2)
+    except Exception as e:
+        return f"Error analyzing job match: {str(e)}"
+
 if __name__ == "__main__":
     main()
+
 
 

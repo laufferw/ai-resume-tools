@@ -11,13 +11,19 @@ AI Resume Tools uses OpenAI's large language models to:
 3. **Save you time** in the job application process while creating more targeted application materials
 The toolkit leverages LangChain for seamless integration with OpenAI models and provides both a graphical user interface and a command-line interface for ease of use.
 
+## Recent Updates
+
+**March 2025**: Updated the project to fix LangChain deprecation warnings by:
+- Replaced `LLMChain` with the modern `RunnableSequence` pattern
+- Updated all chain executions from `.run()` to `.invoke()`
+- Ensured compatibility with the latest LangChain library standards
+
 ## Installation
 
 ### Prerequisites
 - Python 3.6 or higher
 - OpenAI API key
 - Python-docx library (for .docx file handling)
-
 ### Setup
 
 1. Clone this repository or download the source code:
@@ -71,6 +77,7 @@ python gui.py
 
 The GUI provides a user-friendly interface where you can:
 - Browse and select your resume and job description files
+- Paste job description text directly into the application (alternative to uploading a file)
 - Analyze documents to extract key information
 - Customize your resume to match job requirements
 - Generate tailored cover letters
@@ -135,7 +142,7 @@ ai-resume-tools/
 
 ## Tips for Best Results
 1. **Resume Format**: For best results, provide your resume in .docx format, which the application can properly parse.
-2. **Detailed Job Descriptions**: The more detailed the job description, the better the AI can tailor your materials.
+2. **Detailed Job Descriptions**: The more detailed the job description, the better the AI can tailor your materials. You can either upload a job description file or paste the text directly into the application.
 3. **Review Generated Content**: Always review and edit AI-generated content before using it in actual job applications.
 4. **API Usage**: Be aware that using the OpenAI API will incur charges based on your usage.
 5. **Save Your API Key**: Never commit your `.env` file with your actual API key to version control. The `.gitignore` file is set up to prevent this.
