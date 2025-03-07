@@ -103,11 +103,19 @@ def analyze_resume(resume_text: str) -> ResumeAnalysis:
     result = chain.invoke({"resume": resume_text})
     
     try:
-        return resume_parser.parse(result)
+        # Check if result is an AIMessage object and extract content if needed
+        from langchain_core.messages import AIMessage
+        if isinstance(result, AIMessage):
+            # Extract the content from AIMessage
+            result_text = result.content
+        else:
+            result_text = result
+            
+        return resume_parser.parse(result_text)
     except Exception as e:
         print(f"Error parsing resume analysis: {e}")
         print("Raw output:", result)
-        sys.exit(1)
+        raise
 
 def analyze_job_description(job_text: str) -> JobAnalysis:
     """Analyze a job description and extract structured information."""
@@ -123,11 +131,19 @@ def analyze_job_description(job_text: str) -> JobAnalysis:
     result = chain.invoke({"job": job_text})
     
     try:
-        return job_parser.parse(result)
+        # Check if result is an AIMessage object and extract content if needed
+        from langchain_core.messages import AIMessage
+        if isinstance(result, AIMessage):
+            # Extract the content from AIMessage
+            result_text = result.content
+        else:
+            result_text = result
+            
+        return job_parser.parse(result_text)
     except Exception as e:
         print(f"Error parsing job analysis: {e}")
         print("Raw output:", result)
-        sys.exit(1)
+        raise
 
 def customize_resume(resume_analysis: ResumeAnalysis, job_analysis: JobAnalysis) -> ResumeCustomization:
     """Generate resume customization suggestions based on job description."""
@@ -152,11 +168,19 @@ Job Analysis:
     result = chain.invoke({"resume_analysis": resume_analysis.model_dump_json(), "job_analysis": job_analysis.model_dump_json()})
     
     try:
-        return customization_parser.parse(result)
+        # Check if result is an AIMessage object and extract content if needed
+        from langchain_core.messages import AIMessage
+        if isinstance(result, AIMessage):
+            # Extract the content from AIMessage
+            result_text = result.content
+        else:
+            result_text = result
+            
+        return customization_parser.parse(result_text)
     except Exception as e:
         print(f"Error parsing customization suggestions: {e}")
         print("Raw output:", result)
-        sys.exit(1)
+        raise
 
 def generate_cover_letter(resume_analysis: ResumeAnalysis, job_analysis: JobAnalysis, 
                          candidate_name: str, company_name: str) -> str:
@@ -483,11 +507,19 @@ Consider skills match, experience alignment, and overall fit.
     })
     
     try:
-        return job_match_parser.parse(result)
+        # Check if result is an AIMessage object and extract content if needed
+        from langchain_core.messages import AIMessage
+        if isinstance(result, AIMessage):
+            # Extract the content from AIMessage
+            result_text = result.content
+        else:
+            result_text = result
+            
+        return job_match_parser.parse(result_text)
     except Exception as e:
         print(f"Error parsing job match analysis: {e}")
         print("Raw output:", result)
-        sys.exit(1)
+        raise
 
 def process_job_match(resume_path: str, job_path: str) -> str:
     """

@@ -1,6 +1,7 @@
 import os
 import sys
 import threading
+import json
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox, scrolledtext
 from pathlib import Path
@@ -389,7 +390,24 @@ class AIResumeToolsGUI:
             
             # Format the result nicely
             try:
-                job_match = json.loads(result)
+                # Extract JSON content from markdown code blocks if present
+                if isinstance(result, str) and "```json" in result and "```" in result:
+                    # Find the JSON content between ```json and the next ```
+                    start_marker = "```json"
+                    end_marker = "```"
+                    start_index = result.find(start_marker) + len(start_marker)
+                    end_index = result.find(end_marker, start_index)
+                    
+                    if start_index > 0 and end_index > start_index:
+                        # Extract just the JSON content
+                        json_content = result[start_index:end_index].strip()
+                        job_match = json.loads(json_content)
+                    else:
+                        # If markers not found as expected, try parsing the whole string
+                        job_match = json.loads(result)
+                else:
+                    # No markdown formatting, parse directly
+                    job_match = json.loads(result)
                 
                 formatted_result = f"# Job Match Analysis\n\n"
                 formatted_result += f"## Match Score: {job_match['match_score']}%\n\n"
@@ -417,8 +435,9 @@ class AIResumeToolsGUI:
                     formatted_result += f"- {rec}\n"
                 
                 return formatted_result
-            except:
-                # If JSON parsing fails, return the raw result
+            except Exception as e:
+                # If JSON parsing fails, log the error and return the raw result
+                print(f"Error parsing job match result: {e}")
                 return result
             
         except Exception as e:
