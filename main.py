@@ -74,22 +74,104 @@ class ResumeCustomization(BaseModel):
     suggested_removals: list[str] = Field(description="Content that could be removed or de-emphasized")
 
 def load_document(file_path: str) -> str:
-    """Load a document from a file."""
+    """
+    Load a document from a file, with enhanced support for .docx files.
+    
+    Args:
+        file_path: Path to the document file
+        
+    Returns:
+        str: The extracted text content from the document
+    """
     path = Path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"File {file_path} not found")
     
     # Check file extension to determine how to load the document
-    if path.suffix.lower() == '.docx':
+    file_extension = path.suffix.lower()
+    print(f"Loading document: {file_path} (extension: {file_extension})")
+    
+    if file_extension == '.docx':
         # Handle .docx files using python-docx
-        doc = docx.Document(path)
-        full_text = []
-        for para in doc.paragraphs:
-            full_text.append(para.text)
-        return '\n'.join(full_text)
+        try:
+            import docx
+            print(f"Using python-docx version: {docx.__version__}")
+            
+            doc = docx.Document(path)
+            full_text = []
+            
+            # Extract text from paragraphs
+            print(f"Extracting {len(doc.paragraphs)} paragraphs from .docx file")
+            for para in doc.paragraphs:
+                if para.text.strip():  # Only add non-empty paragraphs
+                    full_text.append(para.text)
+            
+            # Extract text from tables
+            print(f"Extracting {len(doc.tables)} tables from .docx file")
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = []
+                    for cell in row.cells:
+                        if cell.text.strip():  # Only add non-empty cells
+                            row_text.append(cell.text)
+                    if row_text:  # Only add non-empty rows
+                        full_text.append(' | '.join(row_text))
+            
+            # Extract text from headers
+            for section in doc.sections:
+                for header in section.header.paragraphs:
+                    if header.text.strip():
+                        full_text.append(header.text)
+                
+                # Extract text from footers
+                for footer in section.footer.paragraphs:
+                    if footer.text.strip():
+                        full_text.append(footer.text)
+            
+            result = '\n'.join(full_text)
+            print(f"Successfully extracted {len(result)} characters from .docx file")
+            return result
+        except ImportError as e:
+            print(f"Error importing docx module: {e}")
+            print("Make sure python-docx is installed: pip install python-docx")
+            raise
+        except Exception as e:
+            print(f"Error processing .docx file: {e}")
+            # Fallback to reading as binary and extracting what we can
+            try:
+                print("Attempting fallback method for .docx extraction...")
+                with open(path, 'rb') as f:
+                    content = f.read()
+                    # Extract text fragments from the binary content
+                    import re
+                    text_fragments = re.findall(b'[a-zA-Z0-9\\s.,;:!?\'\"()\\[\\]\\-]{4,}', content)
+                    extracted_text = b'\n'.join(text_fragments).decode('utf-8', errors='ignore')
+                    print(f"Fallback extracted {len(extracted_text)} characters")
+                    return extracted_text
+            except Exception as fallback_error:
+                print(f"Fallback extraction also failed: {fallback_error}")
+                raise e  # Re-raise the original error
     else:
         # Handle text files and other formats
-        return path.read_text()
+        print(f"Reading text file: {file_path}")
+        try:
+            return path.read_text()
+        except UnicodeDecodeError:
+            print(f"Unicode error when reading {file_path}, trying with explicit encoding")
+            # Try different encodings
+            for encoding in ['utf-8', 'latin-1', 'cp1252']:
+                try:
+                    content = path.read_text(encoding=encoding)
+                    print(f"Successfully read file with {encoding} encoding")
+                    return content
+                except UnicodeDecodeError:
+                    continue
+            
+            # If all attempts fail, try to read as binary and decode
+            print("All encoding attempts failed, trying binary read")
+            with open(path, 'rb') as f:
+                content = f.read()
+                return content.decode('utf-8', errors='ignore')
 
 def analyze_resume(resume_text: str) -> ResumeAnalysis:
     """Analyze a resume and extract structured information."""

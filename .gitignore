@@ -56,3 +56,6 @@ build/
 logs/
 *.log
 
+
+# Gradio temporary files
+.gradio/

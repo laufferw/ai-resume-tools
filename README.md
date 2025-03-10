@@ -83,6 +83,28 @@ The GUI provides a user-friendly interface where you can:
 - Generate tailored cover letters
 - Save outputs to specified locations
 
+### Gradio Web Interface
+
+AI Resume Tools now offers a web-based interface powered by Gradio, providing a more accessible alternative to the traditional GUI application:
+
+1. Install the additional required dependency:
+   ```bash
+   pip install gradio
+   ```
+
+2. Run the Gradio web interface:
+   ```bash
+   python gradio_app.py
+   ```
+
+3. Open the provided URL in your browser (typically http://127.0.0.1:7860)
+
+The Gradio interface offers several advantages:
+- Access the tool through any web browser
+- Share the interface temporarily with others via a public URL
+- More intuitive file upload and download experience
+- Modern, responsive design that works across devices
+
 ### Command Line Interface
 
 #### Generate a Cover Letter
